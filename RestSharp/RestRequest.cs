@@ -122,8 +122,8 @@ namespace RestSharp
 		{
 			//resource.PathAndQuery not supported by Silverlight :(
 		}
-
-		/// <summary>
+#if !NETFX_CORE
+        /// <summary>
 		/// Adds a file to the Files collection to be included with a POST or PUT request 
 		/// (other methods do not support file uploads).
 		/// </summary>
@@ -148,8 +148,10 @@ namespace RestSharp
 				}
 			});
 		}
+#endif
 
-		/// <summary>
+
+        /// <summary>
 		/// Adds the bytes to the Files collection with the specified file name
 		/// </summary>
 		/// <param name="name">The parameter name to use in the request</param>
@@ -281,7 +283,7 @@ namespace RestSharp
 						{
 							var elementType = propType.GetElementType();
 
-							if (((Array)val).Length > 0 && (elementType.IsPrimitive || elementType.IsValueType || elementType == typeof(string))) {
+							if (((Array)val).Length > 0 && (elementType.IsPrimitive() || elementType.IsValueType() || elementType == typeof(string))) {
 								// convert the array to an array of strings
 								var values = (from object item in ((Array)val) select item.ToString()).ToArray<string>();
 								val = string.Join(",", values);

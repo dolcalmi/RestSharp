@@ -1,12 +1,17 @@
 using System;
 using System.Linq;
+#if NETFX_CORE
+using Windows.Security.Cryptography;
+using Windows.Security.Cryptography.Core;
+#else
 using System.Security.Cryptography;
+#endif
 using System.Text;
 using RestSharp.Authenticators.OAuth.Extensions;
 
 namespace RestSharp.Authenticators.OAuth
 {
-#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC
+#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC && !NETFX_CORE
 	[Serializable]
 #endif
 	internal static class OAuthTools
@@ -20,13 +25,13 @@ namespace RestSharp.Authenticators.OAuth
 		private static readonly Random _random;
 		private static readonly object _randomLock = new object();
 
-#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC
+#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC && !NETFX_CORE
 		private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
 
 		static OAuthTools()
 		{
-#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC
+#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC && !NETFX_CORE
 			var bytes = new byte[4];
 			_rng.GetNonZeroBytes(bytes);
 			_random = new Random(BitConverter.ToInt32(bytes, 0));
@@ -308,13 +313,21 @@ namespace RestSharp.Authenticators.OAuth
 #if !PocketPC
 				case OAuthSignatureMethod.HmacSha1:
 				{
+                    var key = "{0}&{1}".FormatWith(consumerSecret, tokenSecret);
+#if NETFX_CORE
+                    var crypto = MacAlgorithmProvider.OpenAlgorithm("HMAC_SHA1");
+                    signature = signatureBase.HashWith(_encoding.GetBytes(key), crypto);
+
+#else
 					var crypto = new HMACSHA1();
-					var key = "{0}&{1}".FormatWith(consumerSecret, tokenSecret);
-
-					crypto.Key = _encoding.GetBytes(key);
+                    crypto.Key = _encoding.GetBytes(key);
 					signature = signatureBase.HashWith(crypto);
+#endif
 
-					break;
+
+
+
+                    break;
 				}
 #endif
 				case OAuthSignatureMethod.PlainText:

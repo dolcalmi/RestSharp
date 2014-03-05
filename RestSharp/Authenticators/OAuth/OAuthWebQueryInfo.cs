@@ -2,10 +2,10 @@ using System;
 
 namespace RestSharp.Authenticators.OAuth
 {
-#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC
+#if !SILVERLIGHT && !WINDOWS_PHONE && !PocketPC && !NETFX_CORE && !NETFX_CORE
 	[Serializable]
 #endif
-	public class OAuthWebQueryInfo
+    public class OAuthWebQueryInfo
 	{
 		public virtual string ConsumerKey { get; set; }
 		public virtual string Token { get; set; }

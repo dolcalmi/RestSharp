@@ -19,6 +19,11 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
+#if NETFX_CORE
+using System.Reflection.Emit;
+using System.Collections.Generic;
+#endif
+
 namespace RestSharp.Extensions
 {
 	/// <summary>
@@ -33,8 +38,12 @@ namespace RestSharp.Extensions
 		/// <param name="prop">Member to retrieve attribute from</param>
 		/// <returns></returns>
 		public static T GetAttribute<T>(this MemberInfo prop) where T : Attribute {
-			return Attribute.GetCustomAttribute(prop, typeof(T)) as T;
-		}
+#if NETFX_CORE
+            return typeof(MemberInfo).GetTypeInfo().GetCustomAttribute<T>();
+#else
+            return Attribute.GetCustomAttribute(prop, typeof(T)) as T;
+#endif
+        }
 
 		/// <summary>
 		/// Retrieve an attribute from a type
@@ -43,8 +52,13 @@ namespace RestSharp.Extensions
 		/// <param name="type">Type to retrieve attribute from</param>
 		/// <returns></returns>
 		public static T GetAttribute<T>(this Type type) where T : Attribute {
-			return Attribute.GetCustomAttribute(type, typeof(T)) as T;
-		}
+#if NETFX_CORE
+            return type.GetTypeInfo().GetCustomAttribute<T>();
+#else
+            return Attribute.GetCustomAttribute(type, typeof(T)) as T;
+#endif
+        }
+
 
 		/// <summary>
 		/// Checks a type to see if it derives from a raw generic (e.g. List[[]])
@@ -54,11 +68,11 @@ namespace RestSharp.Extensions
 		/// <returns></returns>
 		public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic) {
 			while (toCheck != typeof(object)) {
-				var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+				var cur = toCheck.IsGenericType() ? toCheck.GetGenericTypeDefinition() : toCheck;
 				if (generic == cur) {
 					return true;
 				}
-				toCheck = toCheck.BaseType;
+				toCheck = toCheck.BaseType();
 			}
 			return false;
 		}
@@ -110,5 +124,120 @@ namespace RestSharp.Extensions
 			return Enum.Parse(type, value, true);
 #endif
 		}
+
+        public static PropertyInfo GetProperty(this Type type, String propertyName)
+        {
+            return type.GetTypeInfo().GetDeclaredProperty(propertyName);
+        }
+
+        public static MethodInfo GetMethod(this Type type, String methodName)
+        {
+            return type.GetTypeInfo().GetDeclaredMethod(methodName);
+        }
+
+        public static bool IsSubclassOf(this Type type, Type parentType)
+        {
+            return type.GetTypeInfo().IsSubclassOf(parentType);
+        }
+
+        public static bool IsAssignableFrom(this Type type, Type parentType)
+        {
+            return type.GetTypeInfo().IsAssignableFrom(parentType.GetTypeInfo());
+        }
+
+        public static bool IsEnum(this Type type)
+        {
+#if NETFX_CORE
+            return type.GetTypeInfo().IsEnum;
+#else
+            return type.IsEnum;
+#endif
+        }
+        public static bool IsValueType(this Type type)
+        {
+            
+#if NETFX_CORE
+            return type.GetTypeInfo().IsValueType;
+#else
+            return type.IsValueType;
+#endif
+        }
+        public static bool IsPrimitive(this Type type)
+        {
+            
+#if NETFX_CORE
+            return type.GetTypeInfo().IsPrimitive;
+#else
+            return type.IsPrimitive;
+#endif
+        }
+        public static bool IsPublic(this Type type)
+        {
+
+#if NETFX_CORE
+            return type.GetTypeInfo().IsPublic;
+#else
+            return type.IsPublic;
+#endif
+        }
+
+        public static Type GetBaseType(this Type type)
+        {
+            return type.GetTypeInfo().BaseType;
+        }
+
+
+        public static Type[] GetGenericArguments(this Type type)
+        {              
+#if NETFX_CORE
+            return type.GetTypeInfo().GenericTypeArguments;
+#else
+            return type.GetGenericArguments();
+#endif
+        }
+
+        public static object GetPropertyValue(this Object instance, string propertyValue)
+        {
+            return instance.GetType().GetTypeInfo().GetDeclaredProperty(propertyValue).GetValue(instance);
+        }
+
+        public static bool IsGenericType(this Type type)
+        {
+
+#if NETFX_CORE
+            return type.GetTypeInfo().IsGenericType;
+#else
+            return type.IsGenericType;
+#endif
+        }
+
+        public static Type BaseType(this Type type)
+        {
+
+#if NETFX_CORE
+            return type.GetTypeInfo().BaseType;
+#else
+            return type.BaseType;
+#endif
+        }
+
+        public static IEnumerable<PropertyInfo> GetProperties(this Type type)
+        {
+#if NETFX_CORE
+            return type.GetTypeInfo().DeclaredProperties;
+#else
+            return type.GetProperties();
+#endif
+        }
+
+        public static IEnumerable<Type> GetInterfaces(this Type type)
+        {
+#if NETFX_CORE
+            return type.GetTypeInfo().ImplementedInterfaces;
+#else
+            return type.GetInterfaces();
+#endif
+        }
+
 	}
 }

@@ -19,7 +19,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+#if NETFX_CORE
+using Windows.Security.Cryptography.Certificates;
+#else
 using System.Security.Cryptography.X509Certificates;
+#endif
 using System.Text;
 using RestSharp.Deserializers;
 using RestSharp.Extensions;
@@ -35,7 +39,12 @@ namespace RestSharp
 #if PocketPC
 		static readonly Version version = Assembly.GetExecutingAssembly().GetName().Version;
 #else
-		static readonly Version version = new AssemblyName(Assembly.GetExecutingAssembly().FullName).Version;
+#if NETFX_CORE
+        static readonly Version version = new AssemblyName(typeof(RestClient).GetTypeInfo().Assembly.FullName).Version;
+#else
+        static readonly Version version = new AssemblyName(Assembly.GetExecutingAssembly().FullName).Version;
+#endif
+		
 #endif
 		public IHttpFactory HttpFactory = new SimpleFactory<Http>();
 
@@ -44,6 +53,7 @@ namespace RestSharp
 		/// </summary>
 		public RestClient()
 		{
+           
 #if WINDOWS_PHONE
 			UseSynchronizationContext = true;
 #endif

@@ -4,7 +4,7 @@ using System.Text;
 using RestSharp.Authenticators.OAuth;
 using RestSharp.Authenticators.OAuth.Extensions;
 
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE || NETFX_CORE
 using System.Net;
 #elif SILVERLIGHT
 using System.Windows.Browser;
@@ -225,7 +225,11 @@ namespace RestSharp.Authenticators
 					parameters.Add("oauth_signature", oauth.Signature);
 					foreach (var parameter in parameters.Where(parameter => !parameter.Name.IsNullOrBlank() && (parameter.Name.StartsWith("oauth_") || parameter.Name.StartsWith("x_auth_"))))
 					{
-						request.AddParameter(parameter.Name, HttpUtility.UrlDecode(parameter.Value));
+#if NETFX_CORE
+                        request.AddParameter(parameter.Name, WebUtility.UrlDecode(parameter.Value));
+#else
+                        request.AddParameter(parameter.Name, HttpUtility.UrlDecode(parameter.Value));
+#endif
 					}
 					break;
 				default:

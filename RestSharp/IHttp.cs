@@ -18,7 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+#if NETFX_CORE
+using Windows.Security.Cryptography.Certificates;
+#else
 using System.Security.Cryptography.X509Certificates;
+#endif
 
 namespace RestSharp
 {

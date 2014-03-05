@@ -17,7 +17,12 @@
 using System;
 using System.Net;
 using System.Collections.Generic;
+#if NETFX_CORE
+using Windows.Security.Cryptography.Certificates;
+#else
 using System.Security.Cryptography.X509Certificates;
+#endif
+
 #if NET4 || MONODROID || MONOTOUCH || WP8
 using System.Threading;
 using System.Threading.Tasks;

@@ -136,7 +136,7 @@ namespace RestSharp.Serializers
 				var nsName = name.AsNamespaced(Namespace);
 				var element = new XElement(nsName);
 
-				if (propType.IsPrimitive || propType.IsValueType || propType == typeof(string)) {
+				if (propType.IsPrimitive() || propType.IsValueType() || propType == typeof(string)) {
 					if (useAttribute) {
 						root.Add(new XAttribute(name, value));
 						continue;
@@ -177,7 +177,7 @@ namespace RestSharp.Serializers
 			}
 			if (obj is bool)
 			{
-				output = ((bool)obj).ToString(CultureInfo.InvariantCulture).ToLower();
+				output = ((bool)obj).ToString().ToLower();
 			}
 			if (IsNumeric(obj))
 			{

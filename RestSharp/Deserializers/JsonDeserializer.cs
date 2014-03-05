@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using RestSharp.Extensions;
+using System.Reflection;
 
 namespace RestSharp.Deserializers
 {
@@ -64,8 +65,10 @@ namespace RestSharp.Deserializers
 
 		private void Map(object target, IDictionary<string, object> data)
 		{
-			var objType = target.GetType();
-			var props = objType.GetProperties().Where(p => p.CanWrite).ToList();
+			var objType = target.GetType();            
+
+            var props = objType.GetProperties().Where(p => p.CanWrite).ToList();
+
 
 			foreach (var prop in props)
 			{
@@ -73,7 +76,7 @@ namespace RestSharp.Deserializers
 
 				string name = String.Empty;
 
-				var attributes = prop.GetCustomAttributes(typeof(DeserializeAsAttribute), false);
+				var attributes = prop.GetCustomAttributes(typeof(DeserializeAsAttribute), false).ToArray();
 				if (attributes.Length > 0)
 				{
 					var attribute = (DeserializeAsAttribute)attributes[0];
@@ -107,7 +110,7 @@ namespace RestSharp.Deserializers
 			{
 				var key = child.Key;
 				object item = null;
-				if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(List<>))
+				if (valueType.IsGenericType() && valueType.GetGenericTypeDefinition() == typeof(List<>))
 				{
 					item = BuildList(valueType, child.Value);
 				}
@@ -123,14 +126,14 @@ namespace RestSharp.Deserializers
 		private IList BuildList(Type type, object parent)
 		{
 			var list = (IList)Activator.CreateInstance(type);
-			var listType = type.GetInterfaces().First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
+			var listType = type.GetInterfaces().First(x => x.IsGenericType() && x.GetGenericTypeDefinition() == typeof(IList<>));
 			var itemType = listType.GetGenericArguments()[0];
 
 			if (parent is IList)
 			{
 				foreach (var element in (IList)parent)
 				{
-					if (itemType.IsPrimitive)
+					if (itemType.IsPrimitive())
 					{
 						var value = element.ToString();
 						list.Add(value.ChangeType(itemType, Culture));
@@ -170,7 +173,7 @@ namespace RestSharp.Deserializers
 			var stringValue = Convert.ToString(value, Culture);
 			
 			// check for nullable and extract underlying type
-			if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+			if (type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(Nullable<>))
 			{
 				// Since the type is nullable and no value is provided return null
 				if (String.IsNullOrEmpty(stringValue)) return null;
@@ -183,11 +186,11 @@ namespace RestSharp.Deserializers
 				type = value.GetType();
 			}
 
-			if (type.IsPrimitive)
+			if (type.IsPrimitive())
 			{
 				return value.ChangeType(type, Culture);
 			}
-			else if (type.IsEnum)
+			else if (type.IsEnum())
 			{
 				return type.FindEnumValue(stringValue, Culture);
 			}
@@ -244,7 +247,7 @@ namespace RestSharp.Deserializers
 			{
 				return TimeSpan.Parse(stringValue);
 			}
-			else if (type.IsGenericType)
+			else if (type.IsGenericType())
 			{
 				var genericTypeDef = type.GetGenericTypeDefinition();
 				if (genericTypeDef == typeof(List<>))

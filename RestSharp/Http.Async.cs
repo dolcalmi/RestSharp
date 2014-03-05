@@ -170,11 +170,11 @@ namespace RestSharp
 			_timeoutState = new TimeOutState { Request = webRequest };
 
 			if (HasBody || HasFiles || AlwaysMultipartFormData)
-			{
-#if !WINDOWS_PHONE && !PocketPC
+            {
+#if !WINDOWS_PHONE && !PocketPC && !NETFX_CORE
 				webRequest.ContentLength = CalculateContentLength();
 #endif
-				asyncResult = webRequest.BeginGetRequestStream(result => RequestStreamCallback(result, callback), webRequest);
+                asyncResult = webRequest.BeginGetRequestStream(result => RequestStreamCallback(result, callback), webRequest);
 			}
 
 			else
@@ -322,7 +322,7 @@ namespace RestSharp
             }
 
 			callback(raw);
-			raw.Close();
+			raw.Dispose();
 		}
 
 		private void ResponseCallback(IAsyncResult result, Action<HttpResponse> callback)
@@ -379,15 +379,17 @@ namespace RestSharp
 #if !PocketPC
 			webRequest.UseDefaultCredentials = UseDefaultCredentials;
 #endif
-			webRequest.PreAuthenticate = PreAuthenticate;
-
+#if !NETFX_CORE
+            webRequest.PreAuthenticate = PreAuthenticate;
+#endif
+			
+            
 			AppendHeaders(webRequest);
 			AppendCookies(webRequest);
-
+            
 			webRequest.Method = method;
-
-			// make sure Content-Length header is always sent since default is -1
-#if !WINDOWS_PHONE && !PocketPC
+            // make sure Content-Length header is always sent since default is -1
+#if !WINDOWS_PHONE && !PocketPC && !NETFX_CORE
 			// WP7 doesn't as of Beta doesn't support a way to set this value either directly
 			// or indirectly
 			if(!HasFiles && !AlwaysMultipartFormData)
@@ -396,12 +398,12 @@ namespace RestSharp
 			}
 #endif
 
-			if(Credentials != null)
+            if (Credentials != null)
 			{
 				webRequest.Credentials = Credentials;
-			}
+            }
 
-#if !SILVERLIGHT
+#if !SILVERLIGHT && !NETFX_CORE
 			if(UserAgent.HasValue())
 			{
 				webRequest.UserAgent = UserAgent;
@@ -438,8 +440,8 @@ namespace RestSharp
 			}
 #endif
 
-#if !SILVERLIGHT
-			webRequest.AllowAutoRedirect = FollowRedirects;
+#if !SILVERLIGHT && !NETFX_CORE
+            webRequest.AllowAutoRedirect = FollowRedirects;
 #endif
 			return webRequest;
 		}

@@ -41,8 +41,12 @@ namespace RestSharp.Extensions
 #if !PocketPC
 		public static string UrlDecode(this string input)
 		{
-			return HttpUtility.UrlDecode(input);
-		}
+#if NETFX_CORE
+            return WebUtility.UrlDecode(input);
+#else
+            return HttpUtility.UrlDecode(input);
+#endif
+        }
 #endif
 
 		/// <summary>
@@ -74,12 +78,20 @@ namespace RestSharp.Extensions
 #if !PocketPC
 		public static string HtmlDecode(this string input)
 		{
-			return HttpUtility.HtmlDecode(input);
-		}
+#if NETFX_CORE
+            return WebUtility.HtmlDecode(input);
+#else
+            return HttpUtility.HtmlDecode(input);
+#endif
+        }
 
 		public static string HtmlEncode(this string input)
 		{
-			return HttpUtility.HtmlEncode(input);
+#if NETFX_CORE
+            return WebUtility.HtmlEncode(input);
+#else
+            return HttpUtility.HtmlEncode(input);
+#endif
 		}
 #endif
 
@@ -276,15 +288,15 @@ namespace RestSharp.Extensions
 						string restOfWord = word.Substring(1);
 
 						if (restOfWord.IsUpperCase())
-							restOfWord = restOfWord.ToLower(culture);
+							restOfWord = restOfWord.ToLower();
 
-						char firstChar = char.ToUpper(word[0], culture);
+						char firstChar = char.ToUpper(word[0]);
 						words[i] = String.Concat(firstChar, restOfWord);
 					}
 				}
 				return String.Join(joinString, words);
 			}
-			return String.Concat(words[0].Substring(0, 1).ToUpper(culture), words[0].Substring(1));
+			return String.Concat(words[0].Substring(0, 1).ToUpper(), words[0].Substring(1));
 		}
 
 		/// <summary>
@@ -372,19 +384,19 @@ namespace RestSharp.Extensions
 			yield return name.ToCamelCase(culture);
 
 			// try lower cased name
-			yield return name.ToLower(culture);
+			yield return name.ToLower();
 
 			// try name with underscores
 			yield return name.AddUnderscores();
 
 			// try name with underscores with lower case
-			yield return name.AddUnderscores().ToLower(culture);
+			yield return name.AddUnderscores().ToLower();
 
 			// try name with dashes
 			yield return name.AddDashes();
 
 			// try name with dashes with lower case
-			yield return name.AddDashes().ToLower(culture);
+			yield return name.AddDashes().ToLower();
 
 			// try name with underscore prefix
 			yield return name.AddUnderscorePrefix();

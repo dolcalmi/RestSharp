@@ -19,7 +19,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+#if NETFX_CORE
+using Windows.Security.Cryptography.Certificates;
+#else
 using System.Security.Cryptography.X509Certificates;
+#endif
+
 using System.Text;
 using RestSharp.Extensions;
 
@@ -417,7 +422,7 @@ namespace RestSharp
 					response.Headers.Add(new HttpHeader { Name = headerName, Value = headerValue });
 				}
 
-				webResponse.Close();
+				webResponse.Dispose();
 			}
 		}
 
